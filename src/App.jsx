@@ -51,7 +51,7 @@ async function aiParse(text) {
   const key = getApiKey(); if (!key) return { expenses: [], error: "Add your Anthropic API key in Setup to enable AI features." };
   try {
     const today = new Date().toISOString().slice(0, 10);
-    const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-dangerous-direct-browser-access": "true" },
+    const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
       body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000,
         system: `Expense parser. India, INR. Today: ${today}. Return ONLY JSON: {"expenses":[{"amount":number,"category":"id","note":"short","date":"YYYY-MM-DD"}]}. Categories: food,transport,shopping,bills,health,entertainment,education,other. Default today. If can't parse: {"expenses":[],"error":"msg"}`,
         messages: [{ role: "user", content: text }] }) });
@@ -70,7 +70,7 @@ async function aiInsight(expenses, budgets, salary, st) {
     const cs = {}; me.forEach(e => { cs[e.category] = (cs[e.category] || 0) + e.amount; });
     const sb = salary > 0 && st > 0 ? salary - st : Object.values(budgets).reduce((s, v) => s + v, 0);
     const info = JSON.stringify({ spent: me.reduce((s, e) => s + e.amount, 0), budget: sb || "unset", salary: salary || "unset", savTarget: st || "unset", day: now.getDate(), daysInMonth: new Date(y, m+1, 0).getDate(), cats: cs, recent: me.slice(0, 8).map(e => ({ a: e.amount, c: e.category, n: e.note })) });
-    const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-dangerous-direct-browser-access": "true" },
+    const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
       body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000,
         system: `Concise financial advisor, India. ONLY JSON: {"insights":["...",...]}.  3-4 insights, 1-2 sentences. Specific numbers. Focus: velocity, budget, outliers, daily allowance.`,
         messages: [{ role: "user", content: info }] }) });
