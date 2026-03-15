@@ -56,8 +56,10 @@ async function aiParse(text) {
         system: `Expense parser. India, INR. Today: ${today}. Return ONLY JSON: {"expenses":[{"amount":number,"category":"id","note":"short","date":"YYYY-MM-DD"}]}. Categories: food,transport,shopping,bills,health,entertainment,education,other. Default today. If can't parse: {"expenses":[],"error":"msg"}`,
         messages: [{ role: "user", content: text }] }) });
     const d = await r.json();
+    if (d.error) return { expenses: [], error: d.error.message || JSON.stringify(d.error) };
+    if (!d.content) return { expenses: [], error: "Unexpected response: " + JSON.stringify(d).slice(0, 120) };
     return JSON.parse(d.content.map(c => c.text || "").join("").replace(/```json|```/g, "").trim());
-  } catch { return { expenses: [], error: "Couldn't parse. Try: 'coffee 150'" }; }
+  } catch (e) { return { expenses: [], error: "Error: " + e.message }; }
 }
 async function aiInsight(expenses, budgets, salary, st) {
   const key = getApiKey(); if (!key) return { insights: ["Add your Anthropic API key in Setup to enable AI insights."] };
